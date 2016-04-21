@@ -1,0 +1,91 @@
+<html>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script>
+       
+        
+        d3.json("AFINN.json", function(error, result) {
+           
+            var numbers;
+            var sentimentValue;
+            var topics = data[0].topic_word;
+            sentimentValue = result;
+        
+            numbers = data;
+            filteredData = numbers.filter(function(d){return d.topic_word === topics;});
+            filterData = filteredData[0];
+            word = getTextOfTheTopic(filterData);
+            word.sort(function(a,b){return d3.descending(a.sentiment_value, b.sentiment_value)});
+     
+        })
+        
+        function getSentimentValue(keyword,sentimentValue){
+            if (sentimentValue[keyword] != undefined){
+                return value = sentimentValue[keyword];
+            }else{return value = undefined;}
+        }
+        
+        function clone(obj){
+            if(obj == null || typeof(obj) != 'object')
+                return obj;
+            var temp = new obj.constructor(); 
+            for(var key in obj)
+                temp[key] = clone(obj[key]);
+            return temp;
+        }  
+         
+        function getTextOfTheTopic(data){
+            var words = [];
+            var myElement = {
+            text: 0,
+            sentiment_value: 0,
+            count: 0};
+            var myWord = 0;
+            var myPattern = 0;
+            
+            for(u=0;u<data.count; u++){
+                temper_ = data.tweets[u].text.split(' ');
+                for(v=0;v<temper_.length;v++){
+                    myWord = temper_[v];
+                    if (myWord === undefined)continue;
+                    myPattern = new RegExp('(\\w*'+myWord+'\\w*)','gi');
+                    var matches = [];
+                    var sentiment_value = 0;
+                    for (i = 0; i<data.count; i++){
+                        temper = data.tweets[i].text.match(myPattern);
+                        matches = matches.concat(temper);
+                        if(temper != undefined){
+                            splitedWords = data.tweets[i].text.split(' ');
+                            for(j = 0; j<splitedWords.length; j++){
+                                temper_values = getSentimentValue(splitedWords[j],sentimentValue);
+                                if (temper_values === undefined){continue;}
+                                sentiment_value = sentiment_value + temper_values;
+                            } 
+                        }
+                    }
+                    sentiment_value = sentiment_value/data.count;
+                    //console.log(matches);
+                    happen = true;
+                    for(k=0;k<words.length;k++){
+                        if (words[k].text === myWord){happen = false;}
+                        else {continue;};
+                    }
+                    //if(sentiment_value === undefined){happen = false;}
+                    if ((happen === false) || (typeof sentiment_value ==='undefined')){continue;}
+                    else{
+                        var obj = {};
+                        obj = clone(myElement);
+                        obj.sentiment_value = sentiment_value;
+                        obj.count = Math.floor(matches.length/myWord.length);
+                        obj.text = myWord;
+                        words.push(obj);
+                    }
+                }
+            }
+            return words;
+        }
+        
+
+
+   </script>
+    
+</html>

@@ -1,0 +1,439 @@
+<html>
+	<head>
+		<title>Topic Explorer</title>
+		<style>
+		    #title
+			{
+				background-color: white;
+				color: black;
+				padding: 10px;
+				font-family: "Arial"
+			}
+			
+			
+			svg 
+			{
+              font: 10px sans-serif;
+            }
+
+            .area 
+            {
+              fill: steelblue;
+              clip-path: url(#clip);
+            }
+
+            .axis path,
+            .axis line 
+            {
+              fill: none;
+              stroke: #000;
+              shape-rendering: crispEdges;
+            }
+
+            .brush .extent {
+              stroke: #fff;
+              fill-opacity: .125;
+              shape-rendering: crispEdges;
+            }
+		</style>
+	</head>
+	    <div id="title">
+			<h1>Topic Explorer : Daily Top 10</h1>
+		</div>
+	<body>
+	</body>
+	
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script src="./d3.layout.cloud.js" charset="utf-8"></script>>
+	
+	<script>
+		//global variable
+		var raw_data;
+		
+		//load data
+		d3.json("my_data3.json", function(data){
+			raw_data = data;
+			
+			//sort raw data 
+			raw_data.sort(function(a, b) {return d3.descending(a.count, b.count);})
+			
+			//render data
+			render_data(raw_data);
+			
+			
+		
+		});
+		
+		function render_data(data)
+		{
+		    render_overview_bar_chart(data);
+		    
+		    // add a title to the line chart(need to be revised需要修改！)
+		    add_title("Top1-HustonFlood:");
+		    render_line_chart(data);
+		    
+		    // add a title to word_cloud
+		    add_title("Sentiment Analysis:");
+		    render_word_cloud(data);
+		    
+		    add_title("Top Influencers' Tweets:")
+		    render_influencer(data);
+		}
+		
+		function add_title(name)
+		{
+		    d3.select("body")
+		      .append("div")
+		      .text("XXX")
+		      .style({
+				        color: "white",
+				        "font-size": 60,
+				        "font-family": "Arial",
+		      });
+		    d3.select("body")
+		      .append("div")
+		      .text(name)
+		      .style({
+				        color: "black",
+				        "font-size": 30,
+				        "font-family": "Arial",
+		      });
+		    d3.select("body")
+		      .append("div")
+		      .text("XXX")
+		      .style({
+				        color: "white",
+				        "font-size": 60,
+				        "font-family": "Arial",
+		      });
+		}
+		
+		
+		function render_overview_bar_chart(data)
+		{
+		    var w = 960;
+			var h = 200;
+			var barPadding = 1;
+			
+                     
+			var dataset = [
+			                {count: data[0].count, topic_word: data[0].topic_word},
+			                {count: data[1].count, topic_word: data[1].topic_word},
+			                {count: data[2].count, topic_word: data[2].topic_word},
+			                {count: data[3].count, topic_word: data[3].topic_word},
+			                {count: data[4].count, topic_word: data[4].topic_word},
+			                {count: data[5].count, topic_word: data[5].topic_word},
+			                {count: data[6].count, topic_word: data[6].topic_word},
+			                {count: data[7].count, topic_word: data[7].topic_word},
+			                {count: data[8].count, topic_word: data[8].topic_word},
+			                {count: data[9].count, topic_word: data[9].topic_word}
+			              ];
+
+            var yScale = d3.scale.linear()
+							.range([0, h])
+							.domain(d3.extent(data, function(d) { return d.count;}));
+			
+			
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h)
+
+			svg.selectAll("rect")
+			   .data(dataset)
+			   .enter()
+			   .append("rect")
+			   .attr("x", function(d, i) {
+			   		return i * (w / dataset.length);
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d.count); //有改动
+			   })
+			   .attr("width", w / dataset.length - barPadding)
+			   .attr("height", function(d) {
+			   		return yScale(d.count);
+			   })
+			   .attr("fill", function(d) {
+					return "steelblue";
+			   });
+
+			svg.selectAll("text")
+			   .data(dataset)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d.topic_word;
+			   })
+			   .attr("text-anchor", "middle")
+			   .attr("x", function(d, i) {
+			   		return i * (w / dataset.length) + (w / dataset.length - barPadding) / 2;
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d.count) + 14;
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "white");
+		}
+		
+        function render_line_chart(data)
+		{
+		    //get time_count data from raw data  
+           
+            
+            var margin = {top: 10, right: 10, bottom: 100, left: 40},
+                margin2 = {top: 430, right: 10, bottom: 20, left: 40},
+                width = 960 - margin.left - margin.right,
+                height = 500 - margin.top - margin.bottom,
+                height2 = 500 - margin2.top - margin2.bottom;
+
+            var parseDate = d3.time.format("%H").parse;
+
+            var x = d3.time.scale().range([0, width]),
+                x2 = d3.time.scale().range([0, width]),
+                y = d3.scale.linear().range([height, 0]),
+                y2 = d3.scale.linear().range([height2, 0]);
+
+            var xAxis = d3.svg.axis().scale(x).orient("bottom"),
+                xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
+                yAxis = d3.svg.axis().scale(y).orient("left");
+
+            var brush = d3.svg.brush()
+                .x(x2)
+                .on("brush", brushed);
+
+            var area = d3.svg.area()
+                .interpolate("monotone")
+                .x(function(d) { return x(d.time); })
+                .y0(height)
+                .y1(function(d) { return y(d.count); });
+
+            var area2 = d3.svg.area()
+                .interpolate("monotone")
+                .x(function(d) { return x2(d.time); })
+                .y0(height2)
+                .y1(function(d) { return y2(d.count); });
+
+            var svg = d3.select("body").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
+
+            svg.append("defs").append("clipPath")
+                .attr("id", "clip")
+              .append("rect")
+                .attr("width", width)
+                .attr("height", height);
+
+            var focus = svg.append("g")
+                .attr("class", "focus")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            var context = svg.append("g")
+                .attr("class", "context")
+                .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+           
+            //time_array is the topic that is going to be plotted, in this case, we use the topic of data[0]  
+            var array_length = data[0].tweets.length;
+            var time_array = [  
+                                {time: 00, count: 0},
+                                {time: 01, count: 0},
+                                {time: 02, count: 0},
+                                {time: 03, count: 0},
+                                {time: 04, count: 0},
+                                {time: 05, count: 0},
+                                {time: 06, count: 0},
+                                {time: 07, count: 0},
+                                {time: 08, count: 0},
+                                {time: 09, count: 0},
+                                {time: 10, count: 0},
+                                {time: 11, count: 0},
+                                {time: 12, count: 0},
+                                {time: 13, count: 0},
+                                {time: 14, count: 0},
+                                {time: 15, count: 0},
+                                {time: 16, count: 0},
+                                {time: 17, count: 0},
+                                {time: 18, count: 0},
+                                {time: 19, count: 0},
+                                {time: 20, count: 0},
+                                {time: 21, count: 0},
+                                {time: 22, count: 0},
+                                {time: 23, count: 0},                   
+                             ];
+        
+            for (var i = 0; i < array_length; i++)
+            {
+                var time_string = raw_data[0].tweets[i].created_at.substring(11,13);
+                time_number = Number(time_string)
+                for (var j = 0; j < 25; j++)
+                {
+                    if (time_number == j)
+                    {
+                        time_array[j].count ++;
+                    }
+                }
+            }
+  
+	//	data.time = parseDate(data.time);
+            for (i=0; i<24; i++)
+              {
+                  time_array[i].time = new Date(2016, 3, 21, time_array[i].time, 0);
+      
+              }
+              x.domain(d3.extent(time_array.map(function(d) { return d.time; })));
+              y.domain([0, d3.max(time_array.map(function(d) { return d.count; }))]);
+              x2.domain(x.domain());
+              y2.domain(y.domain());
+
+              focus.append("path")
+                  .datum(time_array)
+                  .attr("class", "area")
+                  .attr("d", area);
+
+              focus.append("g")
+                  .attr("class", "x axis")
+                  .attr("transform", "translate(0," + height + ")")
+                  .call(xAxis);
+
+              focus.append("g")
+                  .attr("class", "y axis")
+                  .call(yAxis);
+
+              context.append("path")
+                  .datum(time_array)
+                  .attr("class", "area")
+                  .attr("d", area2);
+
+              context.append("g")
+                  .attr("class", "x axis")
+                  .attr("transform", "translate(0," + height2 + ")")
+                  .call(xAxis2);
+
+              context.append("g")
+                  .attr("class", "x brush")
+                  .call(brush)
+                .selectAll("rect")
+                  .attr("y", -6)
+                  .attr("height", height2 + 7);
+            
+            function brushed() 
+		    {
+                x.domain(brush.empty() ? x2.domain() : brush.extent());
+                focus.select(".area").attr("d", area);
+                focus.select(".x.axis").call(xAxis);
+            }
+            
+		}
+		
+		
+		function render_word_cloud(data)
+		{
+		    var fill = d3.scale.category20();
+	        
+	        
+	            
+            topic = [
+                        {text: "happy", sentiment_value: -1, count:20},
+                        {text: "Hello", sentiment_value: 101, count:15},
+                        {text: "World", sentiment_value: 101  , count:70},
+                        {text: "you", sentiment_value: -1, count:80},
+                        {text: "Opps", sentiment_value: -1, count:80},
+                        {text: "flood", sentiment_value: -1, count:100},
+                        {text: "hope", sentiment_value: 101, count:101}
+                   ];
+    
+            var layout = d3.layout.cloud()
+                .size([500, 500])
+                .words(
+                  topic.map(function(d) {
+                  //return {text: d, size: 10 + Math.random() * 90, test: "haha"};
+                  return {text: d.text, size: d.count, color: d.sentiment_value};
+                }))
+                .padding(5)
+                .rotate(function() { return ~~ 0; })
+                .font("Impact")
+                .fontSize(function(d) { return d.size; })
+                .on("end", draw);
+
+            layout.start();
+
+            function draw(words) 
+            {
+              d3.select("body").append("svg")
+                  .attr("width", layout.size()[0])
+                  .attr("height", layout.size()[1])
+                .append("g")
+                  .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")")
+                .selectAll("text")
+                  .data(words)
+                .enter().append("text")
+                  .style("font-size", function(d) { return d.size + "px"; })
+                  .style("font-family", "Impact")
+                  //.style("fill", function(d, i) { return fill(i); })
+                  .style("fill", function(d, i) { 
+                                                if (d.color > 0)
+                                                {
+                                                    return "red";
+                                                }
+                                                else
+                                                {
+                                                    return "black";
+                                                }
+                                            })    
+                  .attr("text-anchor", "middle")
+                  .attr("transform", function(d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                  })
+                  .text(function(d) { return d.text; });
+            }   
+		    
+		}
+		
+		function render_influencer(data)
+		{
+		    //sort the data by followers
+		    //raw_data.sort(function(a, b) {return d3.descending(a.count, b.count);})
+		    data_sorted = data[0].tweets;
+		    data_sorted.sort(function(a, b) {return d3.descending(a.followers_count, b.followers_count)});
+		    
+		    //get the first ten web celebrity
+		    data_using = data_sorted.slice(0,0.1 * data_sorted.length);
+		    
+		    //render web celebrity
+		    var text_displayed = [data_using[0].text];
+		    for (var i = 0; i < data_using.length; i++)
+		    {   
+		        if (i == 0)
+		        {   
+		            d3.select("body")
+		                .append("li")
+		                .text(data_using[i].text + "user_name:"+ data_using[i].screen_name +"  followers_count:"+ data_using[i].followers_count);
+		        }
+		        else
+		        {
+                    for (j = 0; j < text_displayed.length; j++)
+                    {
+                        if (data_using[i].text == text_displayed[j])
+                        {
+                            break;
+                        }
+                    }
+                    if ( (j == text_displayed.length) && (data_using[i].text != text_displayed[j]))
+                    {   
+                        text_displayed.push(data_using[i].text);
+                        d3.select("body")
+		                    .append("li")
+		                    .text(data_using[i].text + "user_name:"+ data_using[i].screen_name +"  followers_count:"+ data_using[i].followers_count);
+                    }
+                }
+		    }
+		}
+		
+
+		
+		
+	</script>
+	
+</html>
