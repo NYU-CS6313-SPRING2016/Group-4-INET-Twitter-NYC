@@ -1,0 +1,77 @@
+<html>	
+	
+	<head>
+		<title>Topic Explorer</title>
+		<style>
+		</style>
+	</head>
+	
+	<body>
+		<div>
+			
+		</div>
+	</body>
+	
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script src="./d3.layout.cloud.js" charset="utf-8"></script>>
+
+<script>
+	//var d3 = require("d3"),
+	//var	cloud = require("./d3.layout.cloud.js");
+	//该调整大小了：用topic中的count
+	
+	var fill = d3.scale.category20();
+	
+	topic = [
+				{text: "happy", sentiment_value: -1, count:20},
+				{text: "Hello", sentiment_value: 101, count:15},
+				{text: "World", sentiment_value: 101  , count:70},
+				{text: "you", sentiment_value: -1, count:80}
+		   ];
+	
+	var layout = d3.layout.cloud()
+		.size([500, 500])
+		.words(
+		  topic.map(function(d) {
+		  //return {text: d, size: 10 + Math.random() * 90, test: "haha"};
+		  return {text: d.text, size: d.count, color: d.sentiment_value};
+		}))
+		.padding(5)
+		.rotate(function() { return ~~ 0; })
+		.font("Impact")
+		.fontSize(function(d) { return d.size; })
+		.on("end", draw);
+
+	layout.start();
+
+	function draw(words) {
+	  d3.select("body").append("svg")
+		  .attr("width", layout.size()[0])
+		  .attr("height", layout.size()[1])
+		.append("g")
+		  .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")")
+		.selectAll("text")
+		  .data(words)
+		.enter().append("text")
+		  .style("font-size", function(d) { return d.size + "px"; })
+		  .style("font-family", "Impact")
+		  //.style("fill", function(d, i) { return fill(i); })
+		  .style("fill", function(d, i) { 
+		                                if (d.color > 100)
+		                                {
+		                                    return "red";
+		                                }
+		                                else
+		                                {
+		                                    return "black";
+		                                }
+		                            })    
+		  .attr("text-anchor", "middle")
+		  .attr("transform", function(d) {
+			return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+		  })
+		  .text(function(d) { return d.text; });
+	}
+</script>
+	
+</html>
