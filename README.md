@@ -17,6 +17,6 @@ This application helps to explore the hot topic and related content.
 #Links to:
 
 Final document (The final document has to be a file in PDF on your repository)<br />
-Demo (Instructions below)<br />
-Video (Uploaded to Vimeo)<br />
+Demo https://memeda.herokuapp.com/<br />
+Video: https://youtu.be/qXbqajTtjps<br />
 
