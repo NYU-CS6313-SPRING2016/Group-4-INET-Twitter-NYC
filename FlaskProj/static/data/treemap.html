@@ -1,0 +1,324 @@
+<html>
+<head>
+    <link rel="stylesheet" href="css/chartCSS.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <link href='https://fonts.googleapis.com/css?family=Gloria+Hallelujah' rel='stylesheet' type='text/css'>
+</head>
+
+
+
+<body>
+    <h1>NYC TOPIC EXPLORER</h1>
+    <h2 class="row">
+        <div class="col-4">Hashtag</div>
+        <div class="col-4">Keywords</div>
+        <div class="col-4">Mentioners</div>
+        <div class="col-4">Tweets</div>
+    </h2>
+
+    <div id="svgbg" class="row"></div>
+    <h2>Treemap</h2>
+    <div class='node'></div>
+    <div id="tooltip">tooltip</div>
+
+</body>
+
+<script>
+    var width = 275.75,
+        bar_height = 20,
+        height = innerHeight/2,  //around 40 hashtags
+        left_width = 60;
+
+    var chart1 = d3.select("#svgbg")
+            .append('svg')
+            .attr('class', 'chart')
+            .attr('width', width+left_width)
+            .attr("height", height);
+    var chart2 = d3.select("#svgbg")
+            .append('svg')
+            .attr('class', 'chart')
+            .attr('width', width + left_width)
+            .attr("height", height);
+
+    var chart3 = d3.select("#svgbg")
+            .append('svg')
+            .attr('class', 'chart')
+            .attr('width', width + left_width)
+            .attr("height", height);
+
+     var chart4 = d3.select("#svgbg")
+            .append('div')
+            .attr('class', 'tweets')
+            .append("ul")
+
+
+d3.json("hash_tag.json", function(error, result){
+                data = result;
+                render_hashtag(data);
+            })
+
+d3.json("treemap.json", function(error, result){
+                data = result;
+                render_treemap();
+
+            })
+d3.json("key_word.json", function(error, result){
+                data = result;
+
+                render_keyword();
+            })
+
+
+
+d3.json("mentions_tweets.json", function(error, result){
+                data = result;
+                render_mentioners();
+                render_tweets();
+            })
+
+    function render_hashtag(data)
+            {
+
+             var x = d3.scale.linear()
+            .domain([0, d3.max(data, function(d){ return d.hashtag_num})])    //need to change!
+            .range([0, 200]);
+
+            var y = function(i) { return bar_height * i;}
+
+
+
+            chart1.selectAll("rect")
+            .data(data)
+            .enter().append("rect")
+            .attr("x",  left_width)
+            .attr("y", function(d,i){ return y(i);})
+            .attr("width", function(d, i){ return x(d.hashtag_num)})    //need to change !
+            .attr('height', bar_height)
+            .attr("fill", "steelblue")   // change color for each bar chart
+            .on('mouseenter', function(d, i){
+                d3.select(this).style({stroke:"black"});
+                d3.select("#tooltip").style({
+                    visibility: "visible",
+                    top: d3.event.clientY,
+                    left: d3.event.clientX
+                }).text(d.hashtag_num)
+            })
+             .on('mouseleave', function(d, i){
+                d3.select(this).style({ stroke:"white" })
+                 d3.select("#tooltip").style({
+                    visibility: "hidden"})
+            })
+            //step 3 add value
+
+            chart1.selectAll("text.num")
+            .data(data, function(d){ return d.hashtag_num})
+            .enter().append("text") //!
+            .attr("x", function(d) { return x(d.hashtag_num) + left_width; }) //!
+            .attr("y", function(d, i) { return y(i) + bar_height / 2;})
+            .attr("dx", -5)
+            .attr("dy", ".36em")
+            .attr("text-anchor", "end")
+            .attr('class', 'score')
+            .text(function(d){ return d.hashtag_num;}); //need to change!
+            //step 4 add name
+
+            chart1.selectAll("text.name")
+            .data(data)
+            .enter().append("text")
+            .attr('x', left_width)
+            .attr('y', function(d, i){ return y(i) + bar_height/2})
+            .attr('dy', ".36em")
+            .attr("text-anchor", "end")
+            .attr('class', 'name')
+            .attr('font-size', 'x-small')
+            .text(function(d){ return d.hashtag;});
+
+            // chart4.selectAll("text.name")
+            // .data(data)
+            // .enter().append("text")
+            // .attr('x', left_width)
+            // .attr('y', function(d, i){ return y(i) + bar_height/2})
+            // .attr('dy', ".36em")
+            // .attr("text-anchor", "end")
+            // .attr('class', 'name')
+            // .attr('font-size', 'x-small')
+            // .text(function(d){ return d.tweet;});
+                //"width": 100%, "float","left"; "word-wrap", "break-word";);
+
+            }
+
+function render_tweets() {
+    chart4.selectAll("li")
+            .data(data)
+            .enter().append("li")
+            .attr('class', 'name')
+            .text(function(d){
+                var text_tweet = d.mentioners + ':' + d.text
+                return text_tweet;
+            });
+}
+
+function render_keyword()
+            {
+
+             var x_keyword = d3.scale.linear()
+            .domain([0, d3.max(data, function(d){ return d.keyword_num})])    //need to change!
+            .range([0, 200]);
+
+            var y_keyword = function(i) { return bar_height * i;}
+
+            chart2.selectAll("rect")
+            .data(data)
+            .enter().append("rect")
+            .attr("x",  left_width)
+            .attr("y", function(d,i){ return y_keyword(i);})
+            .attr("width", function(d, i){ return x_keyword(d.keyword_num)})    //need to change !
+            .attr('height', bar_height)
+            .attr("fill", "purple")   // change color for each bar chart
+            .on('mouseenter', function(d, i){
+                d3.select(this).style({stroke:"black"});
+                d3.select("#tooltip").style({
+                    visibility: "visible",
+                    top: d3.event.clientY,
+                    left: d3.event.clientX
+                }).text(d.keyword_num)
+            })
+             .on('mouseleave', function(d, i){
+                d3.select(this).style({ stroke:"white" })
+                 d3.select("#tooltip").style({
+                    visibility: "hidden"})
+            })
+            //step 3 add value
+
+            chart2.selectAll("text.num")
+            .data(data, function(d){ return d.keyword_num})
+            .enter().append("text") //!
+            .attr("x", function(d) { return x_keyword(d.keyword_num) + left_width; }) //!
+            .attr("y", function(d, i) { return y_keyword(i) + bar_height / 2;})
+            .attr("dx", -5)
+            .attr("dy", ".36em")
+            .attr("text-anchor", "end")
+            .attr('class', 'score')
+            .text(function(d){ return d.keyword_num;}); //need to change!
+            //step 4 add name
+
+            chart2.selectAll("text.name")
+            .data(data)
+            .enter().append("text")
+            .attr('x', left_width)
+            .attr('y', function(d, i){ return y_keyword(i) + bar_height/2})
+            .attr('dy', ".36em")
+            .attr("text-anchor", "end")
+            .attr('class', 'name')
+            .attr('font-size', 'small')
+            .text(function(d){ return d.keyword;});
+
+            }
+            //-------------------------------------
+
+            function render_mentioners()
+            {
+
+             var x_mentioners = d3.scale.linear()
+            .domain([0, d3.max(data, function(d){ return d.mentioners_num})])    //need to change!
+            .range([0, 200]);
+
+            var y_mentioners = function(i) { return bar_height * i;}
+
+            chart3.selectAll("rect")
+            .data(data)
+            .enter().append("rect")
+            .attr("x",  left_width)
+            .attr("y", function(d,i){ return y_mentioners(i);})
+            .attr("width", function(d, i){ return x_mentioners(d.mentioners_num)})    //need to change !
+            .attr('height', bar_height)
+            .attr("fill", "green")   // change color for each bar chart
+            .on('mouseenter', function(d, i){
+                d3.select(this).style({stroke:"black"});
+                d3.select("#tooltip").style({
+                    visibility: "visible",
+                    top: d3.event.clientY,
+                    left: d3.event.clientX
+                }).text(d.mentioners_num)
+            })
+             .on('mouseleave', function(d, i){
+                d3.select(this).style({ stroke:"white" })
+                 d3.select("#tooltip").style({
+                    visibility: "hidden"})
+            })
+            //step 3 add value
+
+            // chart3.selectAll("text.num")
+            // .data(data, function(d){ return d.mentioners_num})
+            // .enter().append("text") //!
+            // .attr("x", function(d) { return x_mentioners(d.mentioners_num) + left_width; }) //!
+            // .attr("y", function(d, i) { return y_mentioners(i) + bar_height / 2;})
+            // .attr("dx", -5)
+            // .attr("dy", ".36em")
+            // .attr("text-anchor", "end")
+            // .attr('class', 'score')
+            // .text(function(d){ return d.mentioners_num;}); //need to change!
+            //step 4 add name
+
+            chart3.selectAll("text.name")
+            .data(data)
+            .enter().append("text")
+            .attr('x', left_width)
+            .attr('y', function(d, i){ return y_mentioners(i) + bar_height/2})
+            .attr('dy', ".36em")
+            .attr("text-anchor", "end")
+            .attr('class', 'name')
+            .attr('font-size', 'small')
+            .text(function(d){ return d.mentioners;});
+
+            }
+
+
+
+function render_treemap(){
+
+var array = data;
+var tree = { "name": "tree",
+            children: array};
+
+var map_width = innerWidth,
+    map_height = innerHeight/2,
+    color = d3.scale.category20c(),
+    div = d3.select("body").append("div")
+       .style("position", "relative");
+
+var treemap = d3.layout.treemap()
+    .size([map_width, map_height])
+    .sticky(true)
+    .value(function(d) { return d.size; });
+
+
+var node = div.datum(tree).selectAll(".node")
+      .data(treemap.nodes)
+      .enter().append("div")
+      .attr("class", "node")
+      .call(position)
+      .style("background-color", function(d) {
+          return d.name == 'tree' ? '#fff' : "#b0e0f8"; })
+      .append('div')
+      .style("font-size", function(d) {
+          // compute font size based on sqrt(area)
+          return Math.max(10, 0.18*Math.sqrt(d.area))+'px'; })
+      .text(function(d) { return d.children ? null : d.name; });
+
+function position() {
+  this.style("left", function(d) { return d.x + "px"; })
+      .style("top", function(d) { return d.y + "px"; })
+      .style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
+      .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
+}
+
+}
+
+
+
+</script>
+
+
+</html>
