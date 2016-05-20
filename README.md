@@ -1,6 +1,4 @@
-#Title:
-
-##Twitter-NYC Topic Explorer
+#Twitter-NYC Topic Explorer
 
 #Students:<br />
 
