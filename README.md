@@ -1,4 +1,4 @@
-1. #Title
+#1. Title
 
 NYC Topic Explorer
 
