@@ -16,7 +16,7 @@ This application helps to explore the hot topic and related content.
 
 #Links to:
 
-Final document (The final document has to be a file in PDF on your repository)<br />
+Final document: https://docs.google.com/document/d/1tqQ0Y0BxFxnoBIrb1z7ElSLhqniy7DNWe4JY3SlxPNg/edit?usp=sharing<br />
 Demo https://memeda.herokuapp.com/<br />
 Video: https://youtu.be/qXbqajTtjps<br />
 
