@@ -1,8 +1,8 @@
 #1. Title
 
-NYC Topic Explorer
+Twitter-NYC Topic Explorer
 
-#Students:
+Students:
 Shipping Wang, 
 Yan Zhang, 
 Xiaodan Hu
